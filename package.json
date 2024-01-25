@@ -1,7 +1,7 @@
 {
   "name": "@themackabu/yarn2",
   "installationMethod": "unknown",
-  "version": "1.25.3",
+  "version": "1.26.1",
   "license": "BSD-2-Clause",
   "preferGlobal": true,
   "description": "Personal development fork for Yarn 1.x.x",

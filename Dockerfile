@@ -1,5 +1,5 @@
 # Dockerfile for building Yarn.
-# docker build -t yarnpkg/dev -f Dockerfile.dev .
+# docker build -t yarnpkg/dev -f Dockerfile .
 
 FROM node:10
 

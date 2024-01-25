@@ -1,1 +1,0 @@
-The 1.x codebase is fairly old and will only accept security fixes. For new features or bugfixes, please see our new [repository](https://github.com/yarnpkg/berry) and its [contribution guide](https://yarnpkg.com/advanced/contributing).
