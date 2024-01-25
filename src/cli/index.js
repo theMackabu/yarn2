@@ -633,11 +633,12 @@ async function start(): Promise<void> {
     // ignore all arguments after a --
     const doubleDashIndex = process.argv.findIndex((element) => element === '--');
     const startArgs = process.argv.slice(0, 2);
-    const args = process.argv.slice(2, doubleDashIndex === -1 ? process.argv.length : doubleDashIndex);
-    const endArgs = doubleDashIndex === -1 ? [] : process.argv.slice(doubleDashIndex);
 
     // default production false
-    args.push('--prod=false');
+    startArgs.push('--prod=false');
+
+    const args = process.argv.slice(2, doubleDashIndex === -1 ? process.argv.length : doubleDashIndex);
+    const endArgs = doubleDashIndex === -1 ? [] : process.argv.slice(doubleDashIndex);
 
     await main({ startArgs, args, endArgs });
   }
