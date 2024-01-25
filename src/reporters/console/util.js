@@ -1,10 +1,10 @@
 /* @flow */
 
 import tty from 'tty';
-import type {Stdout} from '../types.js';
+import type { Stdout } from '../types.js';
 
 const readline = require('readline');
-const {supportsColor} = require('chalk');
+const { supportsColor } = require('chalk');
 
 const CLEAR_WHOLE_LINE = 0;
 const CLEAR_RIGHT_OF_CURSOR = 1;

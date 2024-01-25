@@ -1,11 +1,11 @@
 /* @flow */
 
-import type {Reporter} from '../../reporters/index.js';
+import type { Reporter } from '../../reporters/index.js';
 import type Config from '../../config.js';
 import buildSubCommands from './_build-sub-commands.js';
-import {getRcConfigForFolder} from '../../rc.js';
+import { getRcConfigForFolder } from '../../rc.js';
 import * as fs from '../../util/fs.js';
-import {stringify} from '../../lockfile';
+import { stringify } from '../../lockfile';
 
 const chalk = require('chalk');
 const invariant = require('invariant');
@@ -34,7 +34,7 @@ type Release = {|
 |};
 
 function getBundleAsset(release: Release): ?ReleaseAsset {
-  return release.assets.find(asset => {
+  return release.assets.find((asset) => {
     return asset.name.match(/^yarn-[0-9]+\.[0-9]+\.[0-9]+\.js$/);
   });
 }
@@ -43,10 +43,7 @@ type FetchReleasesOptions = {|
   includePrereleases: boolean,
 |};
 
-async function fetchReleases(
-  config: Config,
-  {includePrereleases = false}: FetchReleasesOptions = {},
-): Promise<Array<Release>> {
+async function fetchReleases(config: Config, { includePrereleases = false }: FetchReleasesOptions = {}): Promise<Array<Release>> {
   const token = process.env.GITHUB_TOKEN;
   const tokenUrlParameter = token ? `?access_token=${token}` : '';
   const request: Array<Release> = await config.requestManager.request({
@@ -54,7 +51,7 @@ async function fetchReleases(
     json: true,
   });
 
-  const releases = request.filter(release => {
+  const releases = request.filter((release) => {
     if (release.draft) {
       return false;
     }
@@ -96,7 +93,7 @@ export function hasWrapper(flags: Object, args: Array<string>): boolean {
   return false;
 }
 
-const {run, setFlags, examples} = buildSubCommands('policies', {
+const { run, setFlags, examples } = buildSubCommands('policies', {
   async setVersion(config: Config, reporter: Reporter, flags: Object, args: Array<string>): Promise<void> {
     let range = args[0] || 'latest';
     let allowRc = flags.rc;
@@ -135,7 +132,7 @@ const {run, setFlags, examples} = buildSubCommands('policies', {
         return;
       }
 
-      const release = releases.find(release => {
+      const release = releases.find((release) => {
         // $FlowFixMe
         return semver.satisfies(release.version, range);
       });
@@ -182,4 +179,4 @@ const {run, setFlags, examples} = buildSubCommands('policies', {
   },
 });
 
-export {run, setFlags, examples};
+export { run, setFlags, examples };

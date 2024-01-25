@@ -2,9 +2,9 @@
 
 import commands from './index.js';
 import * as constants from '../../constants.js';
-import type {Reporter} from '../../reporters/index.js';
+import type { Reporter } from '../../reporters/index.js';
 import type Config from '../../config.js';
-import {sortAlpha, sortOptionsByFlags, hyphenate} from '../../util/misc.js';
+import { sortAlpha, sortOptionsByFlags, hyphenate } from '../../util/misc.js';
 import aliases from '../aliases';
 const chalk = require('chalk');
 
@@ -23,7 +23,7 @@ export function run(config: Config, reporter: Reporter, commander: Object, args:
       const command = commands[commandName];
       if (command) {
         command.setFlags(commander);
-        const examples: Array<string> = (command.examples || []).map(example => `    $ yarn ${example}`);
+        const examples: Array<string> = (command.examples || []).map((example) => `    $ yarn ${example}`);
         if (examples.length) {
           commander.on('--help', () => {
             reporter.log(reporter.lang('helpExamples', reporter.rawText(examples.join('\n'))));
@@ -40,7 +40,12 @@ export function run(config: Config, reporter: Reporter, commander: Object, args:
   commander.on('--help', () => {
     const commandsText = [];
     for (const name of Object.keys(commands).sort(sortAlpha)) {
-      if (commands[name].useless || Object.keys(aliases).map(key => aliases[key]).indexOf(name) > -1) {
+      if (
+        commands[name].useless ||
+        Object.keys(aliases)
+          .map((key) => aliases[key])
+          .indexOf(name) > -1
+      ) {
         continue;
       }
       if (aliases[name]) {

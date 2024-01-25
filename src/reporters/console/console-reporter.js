@@ -10,19 +10,19 @@ import type {
   QuestionOptions,
   PromptOptions,
 } from '../types.js';
-import type {FormatKeys} from '../format.js';
-import type {AuditMetadata, AuditActionRecommendation, AuditAdvisory, AuditResolution} from '../../cli/commands/audit';
+import type { FormatKeys } from '../format.js';
+import type { AuditMetadata, AuditActionRecommendation, AuditAdvisory, AuditResolution } from '../../cli/commands/audit';
 
 import BaseReporter from '../base-reporter.js';
 import Progress from './progress-bar.js';
 import Spinner from './spinner-progress.js';
-import {clearLine} from './util.js';
-import {removeSuffix} from '../../util/misc.js';
-import {sortTrees, recurseTree, getFormattedOutput} from './helpers/tree-helper.js';
+import { clearLine } from './util.js';
+import { removeSuffix } from '../../util/misc.js';
+import { sortTrees, recurseTree, getFormattedOutput } from './helpers/tree-helper.js';
 import inquirer from 'inquirer';
 import Table from 'cli-table3';
 
-const {inspect} = require('util');
+const { inspect } = require('util');
 const readline = require('readline');
 const chalk = require('chalk');
 const stripAnsi = require('strip-ansi');
@@ -40,7 +40,7 @@ const auditSeverityColors = {
 };
 
 type Row = Array<string>;
-type InquirerResponses<K, T> = {[key: K]: Array<T>};
+type InquirerResponses<K, T> = { [key: K]: Array<T> };
 
 // fixes bold on windows
 if (process.platform === 'win32' && !(process.env.TERM && /^xterm/i.test(process.env.TERM))) {
@@ -141,7 +141,7 @@ export default class ConsoleReporter extends BaseReporter {
       });
     }
 
-    this.log(String(value), {force: true});
+    this.log(String(value), { force: true });
   }
 
   list(key: string, items: Array<string>, hints?: Object) {
@@ -175,12 +175,12 @@ export default class ConsoleReporter extends BaseReporter {
     this.log(this._prependEmoji(msg, '✨'));
   }
 
-  log(msg: string, {force = false}: {force?: boolean} = {}) {
+  log(msg: string, { force = false }: { force?: boolean } = {}) {
     this._lastCategorySize = 0;
-    this._log(msg, {force});
+    this._log(msg, { force });
   }
 
-  _log(msg: string, {force = false}: {force?: boolean} = {}) {
+  _log(msg: string, { force = false }: { force?: boolean } = {}) {
     if (this.isSilent && !force) {
       return;
     }
@@ -237,18 +237,18 @@ export default class ConsoleReporter extends BaseReporter {
               resolve(answer);
             }
           }
-        },
+        }
       );
     });
   }
   // handles basic tree output to console
-  tree(key: string, trees: Trees, {force = false}: {force?: boolean} = {}) {
+  tree(key: string, trees: Trees, { force = false }: { force?: boolean } = {}) {
     this.stopProgress();
     //
     if (this.isSilent && !force) {
       return;
     }
-    const output = ({name, children, hint, color}, titlePrefix, childrenPrefix) => {
+    const output = ({ name, children, hint, color }, titlePrefix, childrenPrefix) => {
       const formatter = this.format;
       const out = getFormattedOutput({
         prefix: titlePrefix,
@@ -381,7 +381,7 @@ export default class ConsoleReporter extends BaseReporter {
       }
     }
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.info(header);
 
       for (let i = 0; i < questions.length; i++) {
@@ -389,7 +389,7 @@ export default class ConsoleReporter extends BaseReporter {
       }
 
       const ask = () => {
-        rl.question(`${question}: `, input => {
+        rl.question(`${question}: `, (input) => {
           let index = toIndex(input);
 
           if (isNaN(index)) {
@@ -417,13 +417,13 @@ export default class ConsoleReporter extends BaseReporter {
 
   progress(count: number): () => void {
     if (this.noProgress || count <= 0) {
-      return function() {
+      return function () {
         // noop
       };
     }
 
     if (!this.isTTY) {
-      return function() {
+      return function () {
         // TODO what should the behaviour here be? we could buffer progress messages maybe
       };
     }
@@ -439,7 +439,7 @@ export default class ConsoleReporter extends BaseReporter {
 
     bar.render();
 
-    return function() {
+    return function () {
       bar.tick();
     };
   }
@@ -472,8 +472,8 @@ export default class ConsoleReporter extends BaseReporter {
       output: this.stdout,
     });
 
-    const {name = 'prompt', type = 'input', validate} = options;
-    const answers: InquirerResponses<string, T> = await prompt([{name, type, message, choices, pageSize, validate}]);
+    const { name = 'prompt', type = 'input', validate } = options;
+    const answers: InquirerResponses<string, T> = await prompt([{ name, type, message, choices, pageSize, validate }]);
 
     rl.close();
 
@@ -481,17 +481,13 @@ export default class ConsoleReporter extends BaseReporter {
   }
 
   auditSummary(auditMetadata: AuditMetadata) {
-    const {totalDependencies, vulnerabilities} = auditMetadata;
+    const { totalDependencies, vulnerabilities } = auditMetadata;
     const totalVulnerabilities =
-      vulnerabilities.info +
-      vulnerabilities.low +
-      vulnerabilities.moderate +
-      vulnerabilities.high +
-      vulnerabilities.critical;
+      vulnerabilities.info + vulnerabilities.low + vulnerabilities.moderate + vulnerabilities.high + vulnerabilities.critical;
     const summary = this.lang(
       'auditSummary',
       totalVulnerabilities > 0 ? this.rawText(chalk.red(totalVulnerabilities.toString())) : totalVulnerabilities,
-      totalDependencies,
+      totalDependencies
     );
     this._log(summary);
 
@@ -519,12 +515,7 @@ export default class ConsoleReporter extends BaseReporter {
   auditAction(recommendation: AuditActionRecommendation) {
     const label = recommendation.action.resolves.length === 1 ? 'vulnerability' : 'vulnerabilities';
     this._log(
-      this.lang(
-        'auditResolveCommand',
-        this.rawText(chalk.inverse(recommendation.cmd)),
-        recommendation.action.resolves.length,
-        this.rawText(label),
-      ),
+      this.lang('auditResolveCommand', this.rawText(chalk.inverse(recommendation.cmd)), recommendation.action.resolves.length, this.rawText(label))
     );
     if (recommendation.isBreaking) {
       this._log(this.lang('auditSemverMajorChange'));
@@ -556,16 +547,16 @@ export default class ConsoleReporter extends BaseReporter {
       const patchRows = [];
 
       if (patchedIn) {
-        patchRows.push({'Patched in': patchedIn});
+        patchRows.push({ 'Patched in': patchedIn });
       }
 
       return [
-        {[chalk.bold(colorSeverity(auditAdvisory.severity))]: chalk.bold(auditAdvisory.title)},
-        {Package: auditAdvisory.module_name},
+        { [chalk.bold(colorSeverity(auditAdvisory.severity))]: chalk.bold(auditAdvisory.title) },
+        { Package: auditAdvisory.module_name },
         ...patchRows,
-        {'Dependency of': `${resolution.path.split('>')[0]} ${resolution.dev ? '[dev]' : ''}`},
-        {Path: resolution.path.split('>').join(' > ')},
-        {'More info': `https://www.npmjs.com/advisories/${auditAdvisory.id}`},
+        { 'Dependency of': `${resolution.path.split('>')[0]} ${resolution.dev ? '[dev]' : ''}` },
+        { Path: resolution.path.split('>').join(' > ') },
+        { 'More info': `https://www.npmjs.com/advisories/${auditAdvisory.id}` },
       ];
     }
 
@@ -574,10 +565,7 @@ export default class ConsoleReporter extends BaseReporter {
       wordWrap: true,
     };
     const table = new Table(tableOptions);
-    const patchedIn =
-      auditAdvisory.patched_versions.replace(' ', '') === '<0.0.0'
-        ? 'No patch available'
-        : auditAdvisory.patched_versions;
+    const patchedIn = auditAdvisory.patched_versions.replace(' ', '') === '<0.0.0' ? 'No patch available' : auditAdvisory.patched_versions;
     table.push(...makeAdvisoryTableRow(patchedIn));
     this._log(table.toString());
   }
