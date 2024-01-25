@@ -1,2 +1,2 @@
 @echo off
-"%~dp0\yarn.cmd" --prod=false %*
+"%~dp0\yarn.cmd" %*
