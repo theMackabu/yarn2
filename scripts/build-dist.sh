@@ -24,37 +24,36 @@ mkdir dist{,/bin,/lib}
 
 # Workaround for https://github.com/yarnpkg/yarn/issues/2591
 eval $system_yarn run build
-eval $system_yarn run build-bundle
+eval $system_yarn run build:bundle
 chmod +x artifacts/*.js
 # Verify that it works as expected
-if (( node_version > 4 )); then
-  [[ "$version" == "$(node artifacts/yarn-$version.js --version)" ]] || exit 1
+if (( node_version > 12 )); then
+  [[ "$version" == "$(node artifacts/yarn2-$version.js --version)" ]] || exit 1
 fi
-[[ "$version" == "$(node artifacts/yarn-legacy-$version.js --version)" ]] || exit 1
+[[ "$version" == "$(node artifacts/yarn2-legacy-$version.js --version)" ]] || exit 1
 
 cp package.json dist/
 cp README.md dist/
 cp LICENSE dist/
-# Only use the legacy version for NPM builds so we are compatible
-# with any Node >= 4 and still small in terms of size.
-cp artifacts/yarn-legacy-$version.js dist/lib/cli.js
-cp bin/{yarn.js,yarn,yarnpkg,*.cmd} dist/bin/
+
+cp artifacts/yarn2-$version.js dist/lib/cli.js
+cp bin/{yarn2.js,yarn2,yarn2pkg,*.cmd} dist/bin/
 chmod +x dist/bin/*
 
 # We cannot bundle v8-compile-cache as it must be loaded separately to be effective.
 cp node_modules/v8-compile-cache/v8-compile-cache.js dist/lib/v8-compile-cache.js
 
 # Verify that it works as expected
-[[ "$version" == "$(./dist/bin/yarn --version)" ]] || exit 1;
+[[ "$version" == "$(./dist/bin/yarn2 --version)" ]] || exit 1;
 
 ./scripts/update-dist-manifest.js $(node -p "require('fs').realpathSync('dist/package.json')") tar
 
 case "$(tar --version)" in
   *GNU*)
-    tar -cvzf artifacts/yarn-v$version.tar.gz --transform="s/^dist/yarn-v$version/" dist/*
+    tar -cvzf artifacts/yarn2-v$version.tar.gz --transform="s/^dist/yarn2-v$version/" dist/*
     ;;
   bsdtar*)
-    tar -cvzf artifacts/yarn-v$version.tar.gz -s "/^dist/yarn-v$version/" dist/*
+    tar -cvzf artifacts/yarn2-v$version.tar.gz -s "/^dist/yarn2-v$version/" dist/*
     ;;
   *)
     echo "Can't determine tar type (BSD/GNU)!"

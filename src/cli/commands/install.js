@@ -1,33 +1,33 @@
 /* @flow */
 
 import objectPath from 'object-path';
-import type {InstallationMethod} from '../../util/yarn-version.js';
-import type {Reporter} from '../../reporters/index.js';
-import type {ReporterSelectOption} from '../../reporters/types.js';
-import type {Manifest, DependencyRequestPatterns} from '../../types.js';
-import type Config, {RootManifests} from '../../config.js';
-import type {RegistryNames} from '../../registries/index.js';
-import type {LockfileObject} from '../../lockfile';
-import {callThroughHook} from '../../util/hooks.js';
+import type { InstallationMethod } from '../../util/yarn-version.js';
+import type { Reporter } from '../../reporters/index.js';
+import type { ReporterSelectOption } from '../../reporters/types.js';
+import type { Manifest, DependencyRequestPatterns } from '../../types.js';
+import type Config, { RootManifests } from '../../config.js';
+import type { RegistryNames } from '../../registries/index.js';
+import type { LockfileObject } from '../../lockfile';
+import { callThroughHook } from '../../util/hooks.js';
 import normalizeManifest from '../../util/normalize-manifest/index.js';
-import {MessageError} from '../../errors.js';
+import { MessageError } from '../../errors.js';
 import InstallationIntegrityChecker from '../../integrity-checker.js';
 import Lockfile from '../../lockfile';
-import {stringify as lockStringify} from '../../lockfile';
+import { stringify as lockStringify } from '../../lockfile';
 import * as fetcher from '../../package-fetcher.js';
 import PackageInstallScripts from '../../package-install-scripts.js';
 import * as compatibility from '../../package-compatibility.js';
 import PackageResolver from '../../package-resolver.js';
 import PackageLinker from '../../package-linker.js';
-import {registries} from '../../registries/index.js';
-import {getExoticResolver} from '../../resolvers/index.js';
-import {clean} from './autoclean.js';
+import { registries } from '../../registries/index.js';
+import { getExoticResolver } from '../../resolvers/index.js';
+import { clean } from './autoclean.js';
 import * as constants from '../../constants.js';
-import {normalizePattern} from '../../util/normalize-pattern.js';
+import { normalizePattern } from '../../util/normalize-pattern.js';
 import * as fs from '../../util/fs.js';
 import map from '../../util/map.js';
-import {version as YARN_VERSION, getInstallationMethod} from '../../util/yarn-version.js';
-import {generatePnpMap} from '../../util/generate-pnp-map.js';
+import { version as YARN_VERSION, getInstallationMethod } from '../../util/yarn-version.js';
+import { generatePnpMap } from '../../util/generate-pnp-map.js';
 import WorkspaceLayout from '../../workspace-layout.js';
 import ResolutionMap from '../../resolution-map.js';
 import guessName from '../../util/guess-name';
@@ -209,13 +209,13 @@ export class Install {
   rootManifestRegistries: Array<RegistryNames>;
   registries: Array<RegistryNames>;
   lockfile: Lockfile;
-  resolutions: {[packageName: string]: string};
+  resolutions: { [packageName: string]: string };
   config: Config;
   reporter: Reporter;
   resolver: PackageResolver;
   scripts: PackageInstallScripts;
   linker: PackageLinker;
-  rootPatternsToOrigin: {[pattern: string]: string};
+  rootPatternsToOrigin: { [pattern: string]: string };
   integrityChecker: InstallationIntegrityChecker;
   resolutionMap: ResolutionMap;
 
@@ -223,10 +223,7 @@ export class Install {
    * Create a list of dependency requests from the current directories manifests.
    */
 
-  async fetchRequestFromCwd(
-    excludePatterns?: Array<string> = [],
-    ignoreUnusedPatterns?: boolean = false,
-  ): Promise<InstallCwdRequest> {
+  async fetchRequestFromCwd(excludePatterns?: Array<string> = [], ignoreUnusedPatterns?: boolean = false): Promise<InstallCwdRequest> {
     const patterns = [];
     const deps: DependencyRequestPatterns = [];
     let resolutionDeps: DependencyRequestPatterns = [];
@@ -237,8 +234,7 @@ export class Install {
     let workspaceLayout;
 
     // some commands should always run in the context of the entire workspace
-    const cwd =
-      this.flags.includeWorkspaceDeps || this.flags.workspaceRootIsCwd ? this.config.lockfileFolder : this.config.cwd;
+    const cwd = this.flags.includeWorkspaceDeps || this.flags.workspaceRootIsCwd ? this.config.lockfileFolder : this.config.cwd;
 
     // non-workspaces are always root, otherwise check for workspace root
     const cwdIsRoot = !this.config.workspaceRootFolder || this.config.lockfileFolder === cwd;
@@ -270,9 +266,9 @@ export class Install {
     };
 
     for (const registry of Object.keys(registries)) {
-      const {filename} = registries[registry];
+      const { filename } = registries[registry];
       const loc = path.join(cwd, filename);
-      if (!await fs.exists(loc)) {
+      if (!(await fs.exists(loc))) {
         continue;
       }
 
@@ -287,17 +283,12 @@ export class Install {
       this.resolutionMap.init(this.resolutions);
       for (const packageName of Object.keys(this.resolutionMap.resolutionsByPackage)) {
         const optional = objectPath.has(manifest.optionalDependencies, packageName) && this.flags.ignoreOptional;
-        for (const {pattern} of this.resolutionMap.resolutionsByPackage[packageName]) {
-          resolutionDeps = [...resolutionDeps, {registry, pattern, optional, hint: 'resolution'}];
+        for (const { pattern } of this.resolutionMap.resolutionsByPackage[packageName]) {
+          resolutionDeps = [...resolutionDeps, { registry, pattern, optional, hint: 'resolution' }];
         }
       }
 
-      const pushDeps = (
-        depType,
-        manifest: Object,
-        {hint, optional}: {hint: ?constants.RequestHint, optional: boolean},
-        isUsed,
-      ) => {
+      const pushDeps = (depType, manifest: Object, { hint, optional }: { hint: ?constants.RequestHint, optional: boolean }, isUsed) => {
         if (ignoreUnusedPatterns && !isUsed) {
           return;
         }
@@ -329,14 +320,14 @@ export class Install {
 
           this.rootPatternsToOrigin[pattern] = depType;
           patterns.push(pattern);
-          deps.push({pattern, registry, hint, optional, workspaceName: manifest.name, workspaceLoc: manifest._loc});
+          deps.push({ pattern, registry, hint, optional, workspaceName: manifest.name, workspaceLoc: manifest._loc });
         }
       };
 
       if (cwdIsRoot) {
-        pushDeps('dependencies', projectManifestJson, {hint: null, optional: false}, true);
-        pushDeps('devDependencies', projectManifestJson, {hint: 'dev', optional: false}, !this.config.production);
-        pushDeps('optionalDependencies', projectManifestJson, {hint: 'optional', optional: true}, true);
+        pushDeps('dependencies', projectManifestJson, { hint: null, optional: false }, true);
+        pushDeps('devDependencies', projectManifestJson, { hint: 'dev', optional: false }, !this.config.production);
+        pushDeps('optionalDependencies', projectManifestJson, { hint: 'optional', optional: true }, true);
       }
 
       if (this.config.workspaceRootFolder) {
@@ -354,16 +345,16 @@ export class Install {
         workspaceLayout = new WorkspaceLayout(workspaces, this.config);
 
         // add virtual manifest that depends on all workspaces, this way package hoisters and resolvers will work fine
-        const workspaceDependencies = {...workspaceManifestJson.dependencies};
+        const workspaceDependencies = { ...workspaceManifestJson.dependencies };
         for (const workspaceName of Object.keys(workspaces)) {
           const workspaceManifest = workspaces[workspaceName].manifest;
           workspaceDependencies[workspaceName] = workspaceManifest.version;
 
           // include dependencies from all workspaces
           if (this.flags.includeWorkspaceDeps) {
-            pushDeps('dependencies', workspaceManifest, {hint: null, optional: false}, true);
-            pushDeps('devDependencies', workspaceManifest, {hint: 'dev', optional: false}, !this.config.production);
-            pushDeps('optionalDependencies', workspaceManifest, {hint: 'optional', optional: true}, true);
+            pushDeps('dependencies', workspaceManifest, { hint: null, optional: false }, true);
+            pushDeps('devDependencies', workspaceManifest, { hint: 'dev', optional: false }, !this.config.production);
+            pushDeps('optionalDependencies', workspaceManifest, { hint: 'optional', optional: true }, true);
           }
         }
         const virtualDependencyManifest: Manifest = {
@@ -373,22 +364,22 @@ export class Install {
           _registry: 'npm',
           _loc: workspacesRoot,
           dependencies: workspaceDependencies,
-          devDependencies: {...workspaceManifestJson.devDependencies},
-          optionalDependencies: {...workspaceManifestJson.optionalDependencies},
+          devDependencies: { ...workspaceManifestJson.devDependencies },
+          optionalDependencies: { ...workspaceManifestJson.optionalDependencies },
           private: workspaceManifestJson.private,
           workspaces: workspaceManifestJson.workspaces,
         };
         workspaceLayout.virtualManifestName = virtualDependencyManifest.name;
         const virtualDep = {};
         virtualDep[virtualDependencyManifest.name] = virtualDependencyManifest.version;
-        workspaces[virtualDependencyManifest.name] = {loc: workspacesRoot, manifest: virtualDependencyManifest};
+        workspaces[virtualDependencyManifest.name] = { loc: workspacesRoot, manifest: virtualDependencyManifest };
 
         // ensure dependencies that should be excluded are stripped from the correct manifest
         stripExcluded(cwdIsRoot ? virtualDependencyManifest : workspaces[projectManifestJson.name].manifest);
 
-        pushDeps('workspaces', {workspaces: virtualDep}, {hint: 'workspaces', optional: false}, true);
+        pushDeps('workspaces', { workspaces: virtualDep }, { hint: 'workspaces', optional: false }, true);
 
-        const implicitWorkspaceDependencies = {...workspaceDependencies};
+        const implicitWorkspaceDependencies = { ...workspaceDependencies };
 
         for (const type of constants.OWNED_DEPENDENCY_TYPES) {
           for (const dependencyName of Object.keys(projectManifestJson[type] || {})) {
@@ -396,12 +387,7 @@ export class Install {
           }
         }
 
-        pushDeps(
-          'dependencies',
-          {dependencies: implicitWorkspaceDependencies},
-          {hint: 'workspaces', optional: false},
-          true,
-        );
+        pushDeps('dependencies', { dependencies: implicitWorkspaceDependencies }, { hint: 'workspaces', optional: false }, true);
       }
 
       break;
@@ -507,7 +493,7 @@ export class Install {
     }
 
     for (const registryName of this.rootManifestRegistries) {
-      const {folder} = this.config.registries[registryName];
+      const { folder } = this.config.registries[registryName];
       await fs.mkdirp(path.join(this.config.lockfileFolder, folder));
     }
   }
@@ -533,7 +519,7 @@ export class Install {
    * used by global.ls command
    */
   async getFlattenedDeps(): Promise<Array<string>> {
-    const {requests: depRequests, patterns: rawPatterns} = await this.fetchRequestFromCwd();
+    const { requests: depRequests, patterns: rawPatterns } = await this.fetchRequestFromCwd();
 
     await this.resolver.init(depRequests, {});
 
@@ -566,14 +552,8 @@ export class Install {
     }
 
     let flattenedTopLevelPatterns: Array<string> = [];
-    const steps: Array<(curr: number, total: number) => Promise<{bailout: boolean} | void>> = [];
-    const {
-      requests: depRequests,
-      patterns: rawPatterns,
-      ignorePatterns,
-      workspaceLayout,
-      manifest,
-    } = await this.fetchRequestFromCwd();
+    const steps: Array<(curr: number, total: number) => Promise<{ bailout: boolean } | void>> = [];
+    const { requests: depRequests, patterns: rawPatterns, ignorePatterns, workspaceLayout, manifest } = await this.fetchRequestFromCwd();
     let topLevelPatterns: Array<string> = [];
 
     const artifacts = await this.integrityChecker.getArtifacts();
@@ -589,7 +569,7 @@ export class Install {
       });
     }
 
-    const audit = new Audit(this.config, this.reporter, {groups: constants.OWNED_DEPENDENCY_TYPES});
+    const audit = new Audit(this.config, this.reporter, { groups: constants.OWNED_DEPENDENCY_TYPES });
     let auditFoundProblems = false;
 
     steps.push((curr: number, total: number) =>
@@ -602,8 +582,8 @@ export class Install {
         });
         topLevelPatterns = this.preparePatterns(rawPatterns);
         flattenedTopLevelPatterns = await this.flatten(topLevelPatterns);
-        return {bailout: !this.flags.audit && (await this.bailout(topLevelPatterns, workspaceLayout))};
-      }),
+        return { bailout: !this.flags.audit && (await this.bailout(topLevelPatterns, workspaceLayout)) };
+      })
     );
 
     if (this.flags.audit) {
@@ -612,26 +592,20 @@ export class Install {
           this.reporter.step(curr, total, this.reporter.lang('auditRunning'), emoji.get('mag'));
           if (this.flags.offline) {
             this.reporter.warn(this.reporter.lang('auditOffline'));
-            return {bailout: false};
+            return { bailout: false };
           }
           const preparedManifests = await this.prepareManifests();
           // $FlowFixMe - Flow considers `m` in the map operation to be "mixed", so does not recognize `m.object`
-          const mergedManifest = Object.assign({}, ...Object.values(preparedManifests).map(m => m.object));
-          const auditVulnerabilityCounts = await audit.performAudit(
-            mergedManifest,
-            this.lockfile,
-            this.resolver,
-            this.linker,
-            topLevelPatterns,
-          );
+          const mergedManifest = Object.assign({}, ...Object.values(preparedManifests).map((m) => m.object));
+          const auditVulnerabilityCounts = await audit.performAudit(mergedManifest, this.lockfile, this.resolver, this.linker, topLevelPatterns);
           auditFoundProblems =
             auditVulnerabilityCounts.info ||
             auditVulnerabilityCounts.low ||
             auditVulnerabilityCounts.moderate ||
             auditVulnerabilityCounts.high ||
             auditVulnerabilityCounts.critical;
-          return {bailout: await this.bailout(topLevelPatterns, workspaceLayout)};
-        }),
+          return { bailout: await this.bailout(topLevelPatterns, workspaceLayout) };
+        })
       );
     }
 
@@ -642,7 +616,7 @@ export class Install {
         const manifests: Array<Manifest> = await fetcher.fetch(this.resolver.getManifests(), this.config);
         this.resolver.updateManifests(manifests);
         await compatibility.check(this.resolver.getManifests(), this.config, this.flags.ignoreEngines);
-      }),
+      })
     );
 
     steps.push((curr: number, total: number) =>
@@ -653,13 +627,13 @@ export class Install {
         flattenedTopLevelPatterns = this.preparePatternsForLinking(
           flattenedTopLevelPatterns,
           manifest,
-          this.config.lockfileFolder === this.config.cwd,
+          this.config.lockfileFolder === this.config.cwd
         );
         await this.linker.init(flattenedTopLevelPatterns, workspaceLayout, {
           linkDuplicates: this.flags.linkDuplicates,
           ignoreOptional: this.flags.ignoreOptional,
         });
-      }),
+      })
     );
 
     if (this.config.plugnplayEnabled) {
@@ -683,7 +657,7 @@ export class Install {
 
           await fs.writeFile(pnpPath, code);
           await fs.chmod(pnpPath, 0o755);
-        }),
+        })
       );
     }
 
@@ -693,7 +667,7 @@ export class Install {
           curr,
           total,
           this.flags.force ? this.reporter.lang('rebuildingPackages') : this.reporter.lang('buildingFreshPackages'),
-          emoji.get('hammer'),
+          emoji.get('hammer')
         );
 
         if (this.config.ignoreScripts) {
@@ -701,19 +675,14 @@ export class Install {
         } else {
           await this.scripts.init(flattenedTopLevelPatterns);
         }
-      }),
+      })
     );
 
     if (this.flags.har) {
       steps.push(async (curr: number, total: number) => {
         const formattedDate = new Date().toISOString().replace(/:/g, '-');
         const filename = `yarn-install_${formattedDate}.har`;
-        this.reporter.step(
-          curr,
-          total,
-          this.reporter.lang('savingHar', filename),
-          emoji.get('black_circle_for_record'),
-        );
+        this.reporter.step(curr, total, this.reporter.lang('savingHar', filename), emoji.get('black_circle_for_record'));
         await this.config.requestManager.saveHar(filename);
       });
     }
@@ -755,7 +724,7 @@ export class Install {
   }
 
   async checkCompatibility(): Promise<void> {
-    const {manifest} = await this.fetchRequestFromCwd();
+    const { manifest } = await this.fetchRequestFromCwd();
     await compatibility.checkOne(manifest, this.config, this.flags.ignoreEngines);
   }
 
@@ -772,7 +741,7 @@ export class Install {
     let hasChanged = false;
 
     if (this.config.plugnplayPersist) {
-      const {object} = manifests.npm;
+      const { object } = manifests.npm;
 
       if (typeof object.installConfig !== 'object') {
         object.installConfig = {};
@@ -849,11 +818,7 @@ export class Install {
         // use json `resolution` version
         version = resolutionVersion;
       } else {
-        version = await this.reporter.select(
-          this.reporter.lang('manualVersionResolution', name),
-          this.reporter.lang('answer'),
-          options,
-        );
+        version = await this.reporter.select(this.reporter.lang('manualVersionResolution', name), this.reporter.lang('answer'), options);
         this.resolutions[name] = version;
       }
 
@@ -933,15 +898,15 @@ export class Install {
    */
 
   async saveLockfileAndIntegrity(patterns: Array<string>, workspaceLayout: ?WorkspaceLayout): Promise<void> {
-    const resolvedPatterns: {[packagePattern: string]: Manifest} = {};
-    Object.keys(this.resolver.patterns).forEach(pattern => {
+    const resolvedPatterns: { [packagePattern: string]: Manifest } = {};
+    Object.keys(this.resolver.patterns).forEach((pattern) => {
       if (!workspaceLayout || !workspaceLayout.getManifestByPattern(pattern)) {
         resolvedPatterns[pattern] = this.resolver.patterns[pattern];
       }
     });
 
     // TODO this code is duplicated in a few places, need a common way to filter out workspace patterns from lockfile
-    patterns = patterns.filter(p => !workspaceLayout || !workspaceLayout.getManifestByPattern(p));
+    patterns = patterns.filter((p) => !workspaceLayout || !workspaceLayout.getManifestByPattern(p));
 
     const lockfileBasedOnResolver = this.lockfile.getLockfile(resolvedPatterns);
 
@@ -951,13 +916,7 @@ export class Install {
 
     // write integrity hash
     if (!this.config.plugnplayEnabled) {
-      await this.integrityChecker.save(
-        patterns,
-        lockfileBasedOnResolver,
-        this.flags,
-        workspaceLayout,
-        this.scripts.getArtifacts(),
-      );
+      await this.integrityChecker.save(patterns, lockfileBasedOnResolver, this.flags, workspaceLayout, this.scripts.getArtifacts());
     }
 
     // --no-lockfile or --pure-lockfile or --frozen-lockfile
@@ -965,9 +924,9 @@ export class Install {
       return;
     }
 
-    const lockFileHasAllPatterns = patterns.every(p => this.lockfile.getLocked(p));
-    const lockfilePatternsMatch = Object.keys(this.lockfile.cache || {}).every(p => lockfileBasedOnResolver[p]);
-    const resolverPatternsAreSameAsInLockfile = Object.keys(lockfileBasedOnResolver).every(pattern => {
+    const lockFileHasAllPatterns = patterns.every((p) => this.lockfile.getLocked(p));
+    const lockfilePatternsMatch = Object.keys(this.lockfile.cache || {}).every((p) => lockfileBasedOnResolver[p]);
+    const resolverPatternsAreSameAsInLockfile = Object.keys(lockfileBasedOnResolver).every((pattern) => {
       const manifest = this.lockfile.getLocked(pattern);
       return (
         manifest &&
@@ -975,7 +934,7 @@ export class Install {
         deepEqual(manifest.prebuiltVariants, lockfileBasedOnResolver[pattern].prebuiltVariants)
       );
     });
-    const integrityPatternsAreSameAsInLockfile = Object.keys(lockfileBasedOnResolver).every(pattern => {
+    const integrityPatternsAreSameAsInLockfile = Object.keys(lockfileBasedOnResolver).every((pattern) => {
       const existingIntegrityInfo = lockfileBasedOnResolver[pattern].integrity;
       if (!existingIntegrityInfo) {
         // if this entry does not have an integrity, no need to re-write the lockfile because of it
@@ -1021,7 +980,7 @@ export class Install {
    */
   async hydrate(ignoreUnusedPatterns?: boolean): Promise<InstallCwdRequest> {
     const request = await this.fetchRequestFromCwd([], ignoreUnusedPatterns);
-    const {requests: depRequests, patterns: rawPatterns, ignorePatterns, workspaceLayout} = request;
+    const { requests: depRequests, patterns: rawPatterns, ignorePatterns, workspaceLayout } = request;
 
     await this.resolver.init(depRequests, {
       isFlat: this.flags.flat,
@@ -1040,7 +999,7 @@ export class Install {
     for (const manifest of this.resolver.getManifests()) {
       const ref = manifest._reference;
       invariant(ref, 'expected reference');
-      const {type} = ref.remote;
+      const { type } = ref.remote;
       // link specifier won't ever hit cache
       let loc = '';
       if (type === 'link') {

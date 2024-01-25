@@ -12,7 +12,7 @@ const path = require('path');
 const fs = require('fs');
 
 const ver = process.versions.node;
-const babelRc = require('./babel.config.json');
+const babelRc = require('./babel.config.js');
 const majorVer = parseInt(ver.split('.')[0], 10);
 
 const build = (lib, opts) =>

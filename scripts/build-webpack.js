@@ -9,6 +9,7 @@ const fs = require('fs');
 
 const version = require('../package.json').version;
 const basedir = path.join(__dirname, '../');
+const babelRc = require('../babel.config.js');
 
 var PnpResolver = {
   apply: function (resolver) {
@@ -73,7 +74,7 @@ const nodeOptions = {
 const compiler = webpack({
   // devtool: 'inline-source-map',
   entry: {
-    [`artifacts/yarn-${version}.js`]: path.join(basedir, 'src/cli/index.js'),
+    [`artifacts/yarn2-${version}.js`]: path.join(basedir, 'src/cli/index.js'),
     'packages/lockfile/index.js': path.join(basedir, 'src/lockfile/index.js'),
   },
   module: {
@@ -116,3 +117,41 @@ const compiler = webpack({
 });
 
 compiler.run();
+
+//
+// Legacy build
+//
+
+const compilerLegacy = webpack({
+  // devtool: 'inline-source-map',
+  entry: path.join(basedir, 'src/cli/index.js'),
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules[\\\/](?!inquirer)/,
+        use: [{ loader: 'babel-loader', options: babelRc }],
+      },
+      {
+        test: /rx\.lite\.aggregates\.js/,
+        use: 'imports-loader?define=>false',
+      },
+    ],
+  },
+  plugins: [
+    new webpack.BannerPlugin({
+      banner: '#!/usr/bin/env node',
+      raw: true,
+    }),
+  ],
+  output: {
+    filename: `yarn2-legacy-${version}.js`,
+    path: path.join(basedir, 'artifacts'),
+    libraryTarget: 'commonjs2',
+  },
+  target: 'node',
+  node: nodeOptions,
+  ...pnpOptions,
+});
+
+compilerLegacy.run();

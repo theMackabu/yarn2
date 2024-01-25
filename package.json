@@ -1,10 +1,10 @@
 {
   "name": "@themackabu/yarn2",
   "installationMethod": "unknown",
-  "version": "1.24.1",
+  "version": "1.25.1",
   "license": "BSD-2-Clause",
   "preferGlobal": true,
-  "description": "Personal development fork for Yarn",
+  "description": "Personal development fork for Yarn 1.x.x",
   "dependencies": {
     "@babel/runtime-corejs2": "^7.0.0",
     "@themackabu/request": "0.0.1-yarn2",
@@ -54,31 +54,19 @@
     "uuid": "^3.0.1",
     "v8-compile-cache": "^2.0.0",
     "validate-npm-package-license": "^3.0.4",
+    "yargs": "^17.7.2",
     "yn": "^2.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.23.7",
     "@babel/eslint-parser": "^7.23.3",
     "@babel/plugin-proposal-class-properties": "^7.0.0",
-    "@babel/plugin-proposal-decorators": "^7.0.0",
-    "@babel/plugin-proposal-do-expressions": "^7.0.0",
-    "@babel/plugin-proposal-export-default-from": "^7.0.0",
     "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
     "@babel/plugin-proposal-function-bind": "^7.0.0",
-    "@babel/plugin-proposal-function-sent": "^7.0.0",
-    "@babel/plugin-proposal-json-strings": "^7.0.0",
-    "@babel/plugin-proposal-logical-assignment-operators": "^7.0.0",
-    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.0.0",
-    "@babel/plugin-proposal-numeric-separator": "^7.0.0",
-    "@babel/plugin-proposal-optional-chaining": "^7.0.0",
-    "@babel/plugin-proposal-pipeline-operator": "^7.0.0",
-    "@babel/plugin-proposal-throw-expressions": "^7.0.0",
-    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
-    "@babel/plugin-syntax-import-meta": "^7.0.0",
-    "@babel/plugin-transform-flow-strip-types": "^7.23.3",
     "@babel/plugin-transform-modules-commonjs": "^7.23.3",
     "@babel/plugin-transform-runtime": "^7.0.0",
     "@babel/preset-env": "^7.23.8",
+    "@babel/preset-flow": "^7.23.3",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^23.4.2",
     "babel-loader": "^8.0.0",
@@ -117,27 +105,26 @@
     "prettier": "^3.2.4",
     "string-replace-loader": "^2.1.1",
     "temp": "^0.8.3",
-    "webpack": "^5.90.0",
-    "yargs": "^6.3.0"
+    "webpack": "^5.90.0"
   },
   "resolutions": {
     "sshpk": "^1.14.2"
   },
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=12.0.0"
   },
-  "repository": "yarnpkg/yarn",
+  "repository": "themackabu/yarn2",
   "bin": {
-    "yarn": "./bin/yarn2.js",
-    "yarnpkg": "./bin/yarn2.js"
+    "yarn2": "./bin/yarn2.js",
+    "yarn2pkg": "./bin/yarn2.js"
   },
   "scripts": {
     "build": "gulp build",
-    "build-bundle": "node ./scripts/build-webpack.js",
-    "build-chocolatey": "powershell ./scripts/build-chocolatey.ps1",
-    "build-deb": "./scripts/build-deb.sh",
-    "build-dist": "bash ./scripts/build-dist.sh",
-    "build-win-installer": "scripts\\build-windows-installer.bat",
+    "build:bundle": "node ./scripts/build-webpack.js",
+    "build:chocolatey": "powershell ./scripts/build-chocolatey.ps1",
+    "build:deb": "./scripts/build-deb.sh",
+    "build:dist": "bash ./scripts/build-dist.sh",
+    "build:win": "scripts\\build-windows-installer.bat",
     "changelog": "git-release-notes $(git describe --tags --abbrev=0 $(git describe --tags --abbrev=0)^)..$(git describe --tags --abbrev=0) scripts/changelog.md",
     "dupe-check": "yarn jsinspect ./src",
     "lint": "eslint . && flow check",
