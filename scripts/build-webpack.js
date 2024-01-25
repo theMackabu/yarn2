@@ -9,11 +9,11 @@ const fs = require('fs');
 
 const version = require('../package.json').version;
 const basedir = path.join(__dirname, '../');
-const babelRc = JSON.parse(fs.readFileSync(path.join(basedir, '.babelrc'), 'utf8'));
+const babelRc = require('./babel.config.json');
 
 var PnpResolver = {
-  apply: function(resolver) {
-    resolver.plugin('resolve', function(request, callback) {
+  apply: function (resolver) {
+    resolver.plugin('resolve', function (request, callback) {
       if (request.context.issuer === undefined) {
         return callback();
       }
@@ -30,32 +30,35 @@ var PnpResolver = {
       }
 
       try {
-        resolved = resolve.sync(request.request, {basedir});
+        resolved = resolve.sync(request.request, { basedir });
       } catch (error) {
         // TODO This is not good! But the `debug` package tries to require `supports-color` without declaring it in its
         // package.json, and Webpack accepts this because it's in a try/catch, so we need to do it as well.
         resolved = false;
       }
 
-      this.doResolve(['resolved'], Object.assign({}, request, {
-        path: resolved,
-      }), '', callback);
+      this.doResolve(
+        ['resolved'],
+        Object.assign({}, request, {
+          path: resolved,
+        }),
+        '',
+        callback
+      );
     });
-  }
+  },
 };
 
-const pnpOptions = fs.existsSync(`${__dirname}/../.pnp.js`) ? {
-  resolve: {
-    plugins: [
-      PnpResolver,
-    ]
-  },
-  resolveLoader: {
-    plugins: [
-      PnpResolver,
-    ]
-  }
-} : {};
+const pnpOptions = fs.existsSync(`${__dirname}/../.pnp.js`)
+  ? {
+      resolve: {
+        plugins: [PnpResolver],
+      },
+      resolveLoader: {
+        plugins: [PnpResolver],
+      },
+    }
+  : {};
 
 // Use the real node __dirname and __filename in order to get Yarn's source
 // files on the user's system. See constants.js
@@ -79,11 +82,11 @@ const compiler = webpack({
       {
         test: /\.js$/,
         exclude: /node_modules|Caches/,
-        loader: require.resolve('babel-loader')
+        loader: require.resolve('babel-loader'),
       },
       {
         test: /rx\.lite\.aggregates\.js/,
-        use: 'imports-loader?define=>false'
+        use: 'imports-loader?define=>false',
       },
       {
         test: /hash-for-dep\/lib\/pkg.js/,
@@ -91,16 +94,16 @@ const compiler = webpack({
         options: {
           search: 'require[(]([^\'"])',
           replace: '__non_webpack_require__($1',
-          flags: 'g'
-        }
-      }
+          flags: 'g',
+        },
+      },
     ],
   },
   plugins: [
     new webpack.BannerPlugin({
       banner: '#!/usr/bin/env node',
       raw: true,
-      exclude: /lockfile/
+      exclude: /lockfile/,
     }),
   ],
   output: {
@@ -110,13 +113,13 @@ const compiler = webpack({
   },
   target: 'node',
   node: nodeOptions,
-  ... pnpOptions,
+  ...pnpOptions,
 });
 
 compiler.run((err, stats) => {
   const fileDependencies = stats.compilation.fileDependencies;
-  const filenames = fileDependencies.map(x => x.replace(basedir, ''));
-  console.log(util.inspect(filenames, {maxArrayLength: null}));
+  const filenames = fileDependencies.map((x) => x.replace(basedir, ''));
+  console.log(util.inspect(filenames, { maxArrayLength: null }));
 });
 
 //
@@ -133,14 +136,14 @@ const compilerLegacy = webpack({
         exclude: /node_modules[\\\/](?!inquirer)/,
         use: [
           {
-            loader:'babel-loader',
+            loader: 'babel-loader',
             options: babelRc.env['pre-node5'],
-          }
+          },
         ],
       },
       {
         test: /rx\.lite\.aggregates\.js/,
-        use: 'imports-loader?define=>false'
+        use: 'imports-loader?define=>false',
       },
     ],
   },
@@ -157,7 +160,7 @@ const compilerLegacy = webpack({
   },
   target: 'node',
   node: nodeOptions,
-  ... pnpOptions,
+  ...pnpOptions,
 });
 
 compilerLegacy.run((err, stats) => {

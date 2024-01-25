@@ -13,7 +13,7 @@ import envReplace from '../util/env-replace.js';
 import Registry from './base-registry.js';
 import {addSuffix} from '../util/misc';
 import {getPosixPath, resolveWithHome} from '../util/path';
-import normalizeUrl from 'normalize-url';
+import normalizeUrl from '../util/normalize-url.js';
 import {default as userHome, home} from '../util/user-home-dir';
 import {MessageError, OneTimePasswordError} from '../errors.js';
 import {getOneTimePassword} from '../cli/commands/login.js';

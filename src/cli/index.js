@@ -12,21 +12,21 @@ import loudRejection from 'loud-rejection';
 import onDeath from 'death';
 import semver from 'semver';
 
-import {ConsoleReporter, JSONReporter} from '../reporters/index.js';
-import {registries, registryNames} from '../registries/index.js';
+import { ConsoleReporter, JSONReporter } from '../reporters/index.js';
+import { registries, registryNames } from '../registries/index.js';
 import commands from './commands/index.js';
 import * as constants from '../constants.js';
 import * as network from '../util/network.js';
-import {MessageError} from '../errors.js';
+import { MessageError } from '../errors.js';
 import Config from '../config.js';
-import {getRcConfigForCwd, getRcArgs} from '../rc.js';
-import {spawnp, forkp} from '../util/child.js';
-import {version} from '../util/yarn-version.js';
+import { getRcConfigForCwd, getRcArgs } from '../rc.js';
+import { spawnp, forkp } from '../util/child.js';
+import { version } from '../util/yarn-version.js';
 import handleSignals from '../util/signal-handler.js';
-import {boolify, boolifyWithDefault} from '../util/conversion.js';
-import {ProcessTermError} from '../errors';
+import { boolify, boolifyWithDefault } from '../util/conversion.js';
+import { ProcessTermError } from '../errors';
 
-process.stdout.prependListener('error', err => {
+process.stdout.prependListener('error', (err) => {
   // swallow err only if downstream consumer process closed pipe early
   if (err.code === 'EPIPE' || err.code === 'ERR_STREAM_DESTROYED') {
     return;
@@ -50,15 +50,7 @@ function findProjectRoot(base: string): string {
   return base;
 }
 
-export async function main({
-  startArgs,
-  args,
-  endArgs,
-}: {
-  startArgs: Array<string>,
-  args: Array<string>,
-  endArgs: Array<string>,
-}): Promise<void> {
+export async function main({ startArgs, args, endArgs }: { startArgs: Array<string>, args: Array<string>, endArgs: Array<string> }): Promise<void> {
   const collect = (val, acc) => {
     acc.push(val);
     return acc;
@@ -71,12 +63,7 @@ export async function main({
   commander.version(version, '-v, --version');
   commander.usage('[command] [flags]');
   commander.option('--no-default-rc', 'prevent Yarn from automatically detecting yarnrc and npmrc files');
-  commander.option(
-    '--use-yarnrc <path>',
-    'specifies a yarnrc file that Yarn should use (.yarnrc only, not .npmrc)',
-    collect,
-    [],
-  );
+  commander.option('--use-yarnrc <path>', 'specifies a yarnrc file that Yarn should use (.yarnrc only, not .npmrc)', collect, []);
   commander.option('--verbose', 'output verbose messages on internal operations');
   commander.option('--offline', 'trigger an error if any required dependencies are not available in local cache');
   commander.option('--prefer-offline', 'use network only if dependencies are not available in local cache');
@@ -102,10 +89,7 @@ export async function main({
   commander.option('--link-duplicates', 'create hardlinks to the repeated modules in node_modules');
   commander.option('--link-folder <path>', 'specify a custom folder to store global links');
   commander.option('--global-folder <path>', 'specify a custom folder to store global packages');
-  commander.option(
-    '--modules-folder <path>',
-    'rather than installing modules into the node_modules folder relative to the cwd, output them here',
-  );
+  commander.option('--modules-folder <path>', 'rather than installing modules into the node_modules folder relative to the cwd, output them here');
   commander.option('--preferred-cache-folder <path>', 'specify a custom folder to store the yarn cache if possible');
   commander.option('--cache-folder <path>', 'specify a custom folder that must be used to store the yarn cache');
   commander.option('--mutex <type>[:specifier]', 'use a mutex to ensure only one yarn instance is executing');
@@ -116,7 +100,7 @@ export async function main({
     process.platform === 'darwin' ||
       process.env.TERM_PROGRAM === 'Hyper' ||
       process.env.TERM_PROGRAM === 'HyperTerm' ||
-      process.env.TERM_PROGRAM === 'Terminus',
+      process.env.TERM_PROGRAM === 'Terminus'
   );
   commander.option('-s, --silent', 'skip Yarn console logs, other types of logs (script output) will be printed');
   commander.option('--cwd <cwd>', 'working directory to use', process.cwd());
@@ -127,11 +111,7 @@ export async function main({
   commander.option('--network-concurrency <number>', 'maximum number of concurrent network requests', parseInt);
   commander.option('--network-timeout <milliseconds>', 'TCP timeout for network requests', parseInt);
   commander.option('--non-interactive', 'do not show interactive prompts');
-  commander.option(
-    '--scripts-prepend-node-path [bool]',
-    'prepend the node executable dir to the PATH in scripts',
-    boolify,
-  );
+  commander.option('--scripts-prepend-node-path [bool]', 'prepend the node executable dir to the PATH in scripts', boolify);
   commander.option('--no-node-version-check', 'do not warn when using a potentially unsupported Node version');
   commander.option('--focus', 'Focus on a single workspace by installing remote copies of its sibling workspaces.');
   commander.option('--otp <otpcode>', 'one-time password for two factor authentication');
@@ -164,7 +144,7 @@ export async function main({
   }
 
   let isKnownCommand = Object.prototype.hasOwnProperty.call(commands, commandName);
-  const isHelp = arg => arg === '--help' || arg === '-h';
+  const isHelp = (arg) => arg === '--help' || arg === '-h';
   const helpInPre = preCommandArgs.findIndex(isHelp);
   const helpInArgs = args.findIndex(isHelp);
   const setHelpMode = () => {
@@ -255,7 +235,7 @@ export async function main({
     nonInteractive: commander.nonInteractive,
   });
 
-  const exit = exitCode => {
+  const exit = (exitCode) => {
     process.exitCode = exitCode || 0;
     reporter.close();
   };
@@ -267,7 +247,7 @@ export async function main({
   const shouldWrapOutput = outputWrapperEnabled && !commander.json && command.hasWrapper(commander, commander.args);
 
   if (shouldWrapOutput) {
-    reporter.header(commandName, {name: 'yarn', version});
+    reporter.header(commandName, { name: 'yarn2', version });
   }
 
   if (commander.nodeVersionCheck && !semver.satisfies(process.versions.node, constants.SUPPORTED_NODE_VERSIONS)) {
@@ -299,7 +279,7 @@ export async function main({
       reporter.warn(reporter.lang('dashDashDeprecation'));
     }
 
-    return command.run(config, reporter, commander, commander.args).then(exitCode => {
+    return command.run(config, reporter, commander, commander.args).then((exitCode) => {
       if (shouldWrapOutput) {
         reporter.footer(false);
       }
@@ -309,9 +289,9 @@ export async function main({
 
   //
   const runEventuallyWithFile = (mutexFilename: ?string, isFirstTime?: boolean): Promise<void> => {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const lockFilename = mutexFilename || path.join(config.cwd, constants.SINGLE_INSTANCE_FILENAME);
-      lockfile.lock(lockFilename, {realpath: false}, (err: mixed, release: (() => void) => void) => {
+      lockfile.lock(lockFilename, { realpath: false }, (err: mixed, release: (() => void) => void) => {
         if (err) {
           if (isFirstTime) {
             reporter.warn(reporter.lang('waitingInstance'));
@@ -323,7 +303,7 @@ export async function main({
           onDeath(() => {
             process.exitCode = 1;
           });
-          resolve(run().then(() => new Promise(resolve => release(resolve))));
+          resolve(run().then(() => new Promise((resolve) => release(resolve))));
         }
       });
     });
@@ -352,7 +332,7 @@ export async function main({
         });
 
         // If we succeed, keep track of all the connected sockets to close them later
-        server.on('connection', socket => {
+        server.on('connection', (socket) => {
           clients.add(socket);
           socket.on('close', () => {
             clients.delete(socket);
@@ -365,20 +345,20 @@ export async function main({
 
           // Also kill the sockets if we finish, whether it's a success or a failure
           run().then(
-            res => {
+            (res) => {
               killSockets();
               resolve(res);
             },
-            err => {
+            (err) => {
               killSockets();
               reject(err);
-            },
+            }
           );
         });
 
         function manager(request, response) {
           response.writeHead(200);
-          response.end(JSON.stringify({cwd: config.cwd, pid: process.pid}));
+          response.end(JSON.stringify({ cwd: config.cwd, pid: process.pid }));
         }
 
         function killSockets() {
@@ -417,16 +397,16 @@ export async function main({
       }
 
       function reportServerName() {
-        const request = http.get(connectionOptions, response => {
+        const request = http.get(connectionOptions, (response) => {
           const buffers = [];
 
-          response.on('data', buffer => {
+          response.on('data', (buffer) => {
             buffers.push(buffer);
           });
 
           response.on('end', () => {
             try {
-              const {cwd, pid} = JSON.parse(Buffer.concat(buffers).toString());
+              const { cwd, pid } = JSON.parse(Buffer.concat(buffers).toString());
               reporter.warn(reporter.lang('waitingNamedInstance', pid, cwd));
             } catch (error) {
               reporter.verbose(error);
@@ -486,7 +466,7 @@ export async function main({
     // lockfile
     const lockLoc = path.join(
       config.lockfileFolder || config.cwd, // lockfileFolder might not be set at this point
-      constants.LOCKFILE_FILENAME,
+      constants.LOCKFILE_FILENAME
     );
     const lockfile = fs.existsSync(lockLoc) ? fs.readFileSync(lockLoc, 'utf8') : 'No lockfile';
     log.push(`Lockfile: ${indent(lockfile)}`);
@@ -521,7 +501,7 @@ export async function main({
 
   // Resolve all folder options relative to cwd
   const resolvedFolderOptions = {};
-  folderOptionKeys.forEach(folderOptionKey => {
+  folderOptionKeys.forEach((folderOptionKey) => {
     const folderOption = commander[folderOptionKey];
     const resolvedFolderOption = folderOption ? path.resolve(commander.cwd, folderOption) : folderOption;
     resolvedFolderOptions[folderOptionKey] = resolvedFolderOption;
@@ -626,7 +606,7 @@ async function start(): Promise<void> {
 
   if (yarnPath && !boolifyWithDefault(process.env.YARN_IGNORE_PATH, false)) {
     const argv = process.argv.slice(2);
-    const opts = {stdio: 'inherit', env: Object.assign({}, process.env, {YARN_IGNORE_PATH: 1})};
+    const opts = { stdio: 'inherit', env: Object.assign({}, process.env, { YARN_IGNORE_PATH: 1 }) };
     let exitCode = 0;
 
     process.on(`SIGINT`, () => {
@@ -651,12 +631,12 @@ async function start(): Promise<void> {
     process.exitCode = exitCode;
   } else {
     // ignore all arguments after a --
-    const doubleDashIndex = process.argv.findIndex(element => element === '--');
+    const doubleDashIndex = process.argv.findIndex((element) => element === '--');
     const startArgs = process.argv.slice(0, 2);
     const args = process.argv.slice(2, doubleDashIndex === -1 ? process.argv.length : doubleDashIndex);
     const endArgs = doubleDashIndex === -1 ? [] : process.argv.slice(doubleDashIndex);
 
-    await main({startArgs, args, endArgs});
+    await main({ startArgs, args, endArgs });
   }
 }
 
@@ -665,7 +645,7 @@ async function start(): Promise<void> {
 export const autoRun = module.children.length === 0;
 
 if (require.main === module) {
-  start().catch(error => {
+  start().catch((error) => {
     console.error(error.stack || error.message || error);
     process.exitCode = 1;
   });

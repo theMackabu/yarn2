@@ -7,8 +7,8 @@ import dnscache from 'dnscache';
 import invariant from 'invariant';
 import RequestCaptureHar from 'request-capture-har';
 
-import type {Reporter} from '../reporters/index.js';
-import {MessageError, ResponseError, OneTimePasswordError} from '../errors.js';
+import type { Reporter } from '../reporters/index.js';
+import { MessageError, ResponseError, OneTimePasswordError } from '../errors.js';
 import BlockingQueue from './blocking-queue.js';
 import * as constants from '../constants.js';
 import * as network from './network.js';
@@ -28,8 +28,8 @@ const successHosts = map();
 const controlOffline = network.isOffline();
 
 interface RequestError extends Error {
-  hostname?: ?string,
-  code?: ?string,
+  hostname?: ?string;
+  code?: ?string;
 }
 
 export type RequestMethods = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE';
@@ -182,7 +182,7 @@ export default class RequestManager {
       // and strip out any text in between the certificates
       try {
         const bundle = fs.readFileSync(opts.cafile).toString();
-        const hasPemPrefix = block => block.startsWith('-----BEGIN ');
+        const hasPemPrefix = (block) => block.startsWith('-----BEGIN ');
         // opts.cafile overrides opts.ca, this matches with npm behavior
         this.ca = bundle.split(/(-----BEGIN .*\r?\n[^-]+\r?\n--.*)/).filter(hasPemPrefix);
       } catch (err) {
@@ -206,7 +206,7 @@ export default class RequestManager {
 
   _getRequestModule(): RequestModuleT {
     if (!this._requestModule) {
-      const request = require('request');
+      const request = require('@themackabu/request');
       if (this.captureHar) {
         this._requestCaptureHar = new RequestCaptureHar(request);
         this._requestModule = this._requestCaptureHar.request.bind(this._requestCaptureHar);
@@ -239,11 +239,11 @@ export default class RequestManager {
       {
         'User-Agent': this.userAgent,
       },
-      params.headers,
+      params.headers
     );
 
     const promise = new Promise((resolve, reject) => {
-      this.queue.push({params, reject, resolve});
+      this.queue.push({ params, reject, resolve });
       this.shiftQueue();
     });
 
@@ -272,7 +272,7 @@ export default class RequestManager {
    */
 
   isPossibleOfflineError(err: RequestError): boolean {
-    const {code, hostname} = err;
+    const { code, hostname } = err;
     if (!code) {
       return false;
     }
@@ -356,10 +356,10 @@ export default class RequestManager {
    */
 
   execute(opts: RequestOptions) {
-    const {params} = opts;
-    const {reporter} = this;
+    const { params } = opts;
+    const { reporter } = this;
 
-    const buildNext = fn => data => {
+    const buildNext = (fn) => (data) => {
       fn(data);
       this.running--;
       this.shiftQueue();
@@ -368,17 +368,17 @@ export default class RequestManager {
     const resolve = buildNext(opts.resolve);
 
     const rejectNext = buildNext(opts.reject);
-    const reject = function(err) {
+    const reject = function (err) {
       err.message = `${params.url}: ${err.message}`;
       rejectNext(err);
     };
 
-    const rejectWithoutUrl = function(err) {
+    const rejectWithoutUrl = function (err) {
       err.message = err.message;
       rejectNext(err);
     };
 
-    const queueForRetry = reason => {
+    const queueForRetry = (reason) => {
       const attempts = params.retryAttempts || 0;
       if (attempts >= this.maxRetryAttempts - 1) {
         return false;
@@ -396,7 +396,7 @@ export default class RequestManager {
     };
 
     let calledOnError = false;
-    const onError = err => {
+    const onError = (err) => {
       if (calledOnError) {
         return;
       }
@@ -439,7 +439,7 @@ export default class RequestManager {
         }
 
         if (res.statusCode === 401 && res.headers['www-authenticate']) {
-          const authMethods = res.headers['www-authenticate'].split(/,\s*/).map(s => s.toLowerCase());
+          const authMethods = res.headers['www-authenticate'].split(/,\s*/).map((s) => s.toLowerCase());
 
           if (authMethods.indexOf('otp') !== -1) {
             reject(new OneTimePasswordError());
@@ -512,7 +512,7 @@ export default class RequestManager {
 
     const process = params.process;
     if (process) {
-      req.on('response', res => {
+      req.on('response', (res) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           return;
         }

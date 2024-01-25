@@ -3,7 +3,6 @@
 /gulpfile.js
 /.eslintrc
 /.editorconfig
-/.babelrc
 /.travis.yml
 /.eslintignore
 /.flowconfig
@@ -17,6 +16,7 @@
 /CODE_OF_CONDUCT.md
 /flow-typed/
 /RELEASING.md
+/babel.config.json
 /Makefile
 /tmp/
 /.nyc_output

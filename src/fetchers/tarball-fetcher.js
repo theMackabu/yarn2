@@ -6,7 +6,7 @@ import * as constants from '../constants.js';
 import BaseFetcher from './base-fetcher.js';
 import * as fsUtil from '../util/fs.js';
 import {removePrefix} from '../util/misc.js';
-import normalizeUrl from 'normalize-url';
+import normalizeUrl from '../util/normalize-url.js';
 
 const crypto = require('crypto');
 const path = require('path');

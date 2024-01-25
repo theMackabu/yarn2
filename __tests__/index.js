@@ -1,6 +1,6 @@
 /* @flow */
 
-import {existsSync} from 'fs';
+import { existsSync } from 'fs';
 
 import NoopReporter from '../src/reporters/base-reporter.js';
 import makeTemp from './_temp';
@@ -11,7 +11,7 @@ const path = require('path');
 const exec = require('child_process').exec;
 
 const fixturesLoc = path.join(__dirname, './fixtures/index');
-const yarnBin = path.join(__dirname, '../bin/yarn.js');
+const yarnBin = path.join(__dirname, '../bin/yarn2.js');
 const semver = require('semver');
 let ver = process.versions.node;
 ver = ver.split('-')[0];
@@ -22,12 +22,7 @@ if (!existsSync(path.resolve(__dirname, '../lib'))) {
   throw new Error('These tests require `yarn build` to have been run first.');
 }
 
-async function execCommand(
-  cmd: string,
-  args: Array<string>,
-  name: string,
-  makeTempDir: ?boolean,
-): Promise<Array<?string>> {
+async function execCommand(cmd: string, args: Array<string>, name: string, makeTempDir: ?boolean): Promise<Array<?string>> {
   const srcDir = path.join(fixturesLoc, name);
   let workingDir = srcDir;
   if (makeTempDir) {
@@ -38,7 +33,7 @@ async function execCommand(
   const cacheDir = path.join(workingDir, '.yarn-cache');
 
   return new Promise((resolve, reject) => {
-    const cleanedEnv = {...process.env};
+    const cleanedEnv = { ...process.env };
     cleanedEnv['YARN_SILENT'] = 0;
     cleanedEnv['YARN_WRAP_OUTPUT'] = 1;
     delete cleanedEnv['FORCE_COLOR'];
@@ -51,7 +46,7 @@ async function execCommand(
       },
       (error, stdout, stderr) => {
         if (error) {
-          reject(Object.assign((new Error(error.message): any), {stdout, stderr}));
+          reject(Object.assign((new Error(error.message): any), { stdout, stderr }));
         } else {
           const stdoutLines = stdout
             .toString()
@@ -61,7 +56,7 @@ async function execCommand(
 
           resolve(stdoutLines);
         }
-      },
+      }
     );
   });
 }
@@ -85,25 +80,23 @@ function expectHelpOutput(stdout) {
 
 function expectHelpOutputAsSubcommand(stdout) {
   expect(stdout[0]).toEqual('Usage: yarn add [packages ...] [flags]');
-  expect(stdout[stdout.length - 1]).toEqual(
-    'Visit https://yarnpkg.com/en/docs/cli/add for documentation about this command.',
-  );
+  expect(stdout[stdout.length - 1]).toEqual('Visit https://yarnpkg.com/en/docs/cli/add for documentation about this command.');
 }
 
 function expectAnErrorMessage(command: Promise<Array<?string>>, expectedMessage: string): Promise<void> {
   return command
-    .then(function() {
+    .then(function () {
       throw new Error('the command did not fail');
     })
-    .catch(error => expect(error.message.replace(/\\/g, '')).toContain(expectedMessage));
+    .catch((error) => expect(error.message.replace(/\\/g, '')).toContain(expectedMessage));
 }
 
 function expectAnInfoMessageAfterError(command: Promise<Array<?string>>, expectedInfo: string): Promise<void> {
   return command
-    .then(function() {
+    .then(function () {
       throw new Error('the command did not fail');
     })
-    .catch(error => expect(error.stdout).toContain(expectedInfo));
+    .catch((error) => expect(error.stdout).toContain(expectedInfo));
 }
 
 test('should add package', async () => {
@@ -134,12 +127,7 @@ test('should add lockfile package', async () => {
 // test is failing on Node 4, https://travis-ci.org/yarnpkg/yarn/jobs/216254539
 if (semver.satisfies(ver, '>=5.0.0')) {
   test.concurrent('should add progress package globally', async () => {
-    const stdout = await execCommand(
-      'global',
-      ['add', 'progress@2.0.0', '--global-folder', './global'],
-      'run-add-progress-globally',
-      true,
-    );
+    const stdout = await execCommand('global', ['add', 'progress@2.0.0', '--global-folder', './global'], 'run-add-progress-globally', true);
 
     const lastLine = stdout[stdout.length - 1];
     expect(lastLine).toMatch(/^Done/);
@@ -151,13 +139,13 @@ test.concurrent('should fail to find non-existent package offline', async () => 
     '--offline',
     ['global', 'add', 'doesnotexistqwertyuiop@2.0.0-doesnotexist', '--global-folder', './global'],
     'run-global-add-offline',
-    true,
+    true
   );
   await expectAnErrorMessage(
     command,
     `error Couldn't find any versions for "doesnotexistqwertyuiop" that matches "2.0.0-doesnotexist" in our cache ` +
       '(possible versions are ""). This is usually caused by a missing entry in the lockfile, running Yarn without ' +
-      'the --offline flag may help fix this issue.',
+      'the --offline flag may help fix this issue.'
   );
 });
 
@@ -250,7 +238,7 @@ test.concurrent('should exit cleanly when running invalid commands', async () =>
 
 test.concurrent('should install if no args', async () => {
   const stdout = await execCommand('', [], 'run-add', true);
-  expect(stdout[0]).toEqual(`yarn install v${pkg.version}`);
+  expect(stdout[0]).toEqual(`yarn2 install v${pkg.version}`);
 });
 
 test.concurrent('should install if first arg looks like a flag', async () => {
@@ -262,8 +250,8 @@ test.concurrent('should not output JSON activity/progress if given --no-progress
   const activityInfo = ['activityStart', 'activityTick', 'activityEnd'];
   const progressInfo = ['progressStart', 'progressTick', 'progressFinish'];
   const stdout = await execCommand('', ['--json', '--no-progress'], 'run-add', true);
-  stdout.forEach(line => {
-    activityInfo.concat(progressInfo).forEach(info => {
+  stdout.forEach((line) => {
+    activityInfo.concat(progressInfo).forEach((info) => {
       expect(line).not.toContain(info);
     });
   });
@@ -272,9 +260,7 @@ test.concurrent('should not output JSON activity/progress if given --no-progress
 test.concurrent('should run help of run command if --help is before script', async () => {
   const stdout = await execCommand('run', ['--help', 'custom-script'], 'run-custom-script-with-arguments');
   expect(stdout[0]).toEqual('Usage: yarn [command] [flags]');
-  expect(stdout[stdout.length - 1]).toEqual(
-    'Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.',
-  );
+  expect(stdout[stdout.length - 1]).toEqual('Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.');
 });
 
 test.concurrent('should run help of custom-script if --help is after script', async () => {
@@ -311,7 +297,7 @@ test.concurrent('should not display documentation link for unknown command', asy
 test.concurrent('should display documentation link for known command', async () => {
   await expectAnInfoMessageAfterError(
     execCommand('add', [], 'run-add', true),
-    'Visit https://yarnpkg.com/en/docs/cli/add for documentation about this command.',
+    'Visit https://yarnpkg.com/en/docs/cli/add for documentation about this command.'
   );
 });
 
@@ -355,39 +341,34 @@ test.concurrent('should run help for camelised command', async () => {
 // but actual flags on the command line are passed.
 test.concurrent('should not pass yarnrc flags to workspace command', async () => {
   const stdout = await execCommand('workspace', ['workspace-1', 'run', 'check', '--x'], 'run-workspace', true);
-  const params = stdout.find(x => x && x.indexOf('ARGS:') === 0);
+  const params = stdout.find((x) => x && x.indexOf('ARGS:') === 0);
   expect(params).not.toMatch(/emoji/);
 });
 
 // regression test for #7776
 test.concurrent('should pass args to workspace command without need for "--"', async () => {
   const stdout = await execCommand('workspace', ['workspace-1', 'run', 'check', '--x', 'y'], 'run-workspace', true);
-  const params = stdout.find(x => x && x.indexOf('ARGS:') === 0);
+  const params = stdout.find((x) => x && x.indexOf('ARGS:') === 0);
   expect(params).toEqual('ARGS: --x y');
 });
 
 // regression test for #7776
 test.concurrent('should pass args after "--" to workspace command', async () => {
-  const stdout = await execCommand(
-    'workspace',
-    ['workspace-1', 'run', 'check', '--', 'x', '-y'],
-    'run-workspace',
-    true,
-  );
-  const params = stdout.find(x => x && x.indexOf('ARGS:') === 0);
+  const stdout = await execCommand('workspace', ['workspace-1', 'run', 'check', '--', 'x', '-y'], 'run-workspace', true);
+  const params = stdout.find((x) => x && x.indexOf('ARGS:') === 0);
   expect(params).toEqual('ARGS: x -y');
 });
 
 // regression test for #7776
 test.concurrent('should pass args to workspaces command without need for "--"', async () => {
   const stdout = await execCommand('workspaces', ['run', 'check', '--x', 'y'], 'run-workspace', true);
-  const params = stdout.find(x => x && x.indexOf('ARGS:') === 0);
+  const params = stdout.find((x) => x && x.indexOf('ARGS:') === 0);
   expect(params).toEqual('ARGS: --x y');
 });
 
 // regression test for #7776
 test.concurrent('should pass args after "--" to workspaces command', async () => {
   const stdout = await execCommand('workspaces', ['run', 'check', '--', 'x', '-y'], 'run-workspace', true);
-  const params = stdout.find(x => x && x.indexOf('ARGS:') === 0);
+  const params = stdout.find((x) => x && x.indexOf('ARGS:') === 0);
   expect(params).toEqual('ARGS: x -y');
 });

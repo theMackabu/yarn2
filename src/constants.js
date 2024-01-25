@@ -3,7 +3,7 @@
 const os = require('os');
 const path = require('path');
 const userHome = require('./util/user-home-dir').default;
-const {getCacheDir, getConfigDir, getDataDir} = require('./util/user-dirs');
+const { getCacheDir, getConfigDir, getDataDir } = require('./util/user-dirs');
 const isWebpackBundle = require('is-webpack-bundle');
 
 type Env = {
@@ -71,7 +71,7 @@ function getYarnBinPath(): string {
   if (isWebpackBundle) {
     return __filename;
   } else {
-    return path.join(__dirname, '..', 'bin', 'yarn.js');
+    return path.join(__dirname, '..', 'bin', 'yarn2.js');
   }
 }
 
@@ -116,7 +116,7 @@ export function getPathKey(platform: string, env: Env): string {
   return pathKey;
 }
 
-export const VERSION_COLOR_SCHEME: {[key: string]: VersionColor} = {
+export const VERSION_COLOR_SCHEME: { [key: string]: VersionColor } = {
   major: 'red',
   premajor: 'red',
   minor: 'yellow',
